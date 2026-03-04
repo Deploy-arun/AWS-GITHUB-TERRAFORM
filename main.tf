@@ -1,7 +1,7 @@
 provider "aws" {
   region = "us-east-1"
 }
-
+/*
 #tfsec:ignore:aws-s3-enable-bucket-logging
 resource "aws_s3_bucket" "example" {
   bucket = "my-tf-example-bucket-999"
@@ -52,4 +52,36 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
       sse_algorithm     = "aws:kms"
     }
   }
+}
+*/
+
+
+resource "aws_eks_cluster" "eks_cluster" {
+
+  name     = var.cluster_name
+  role_arn = data.aws_iam_role.eks_cluster_role.arn
+
+  vpc_config {
+    subnet_ids = data.aws_subnets.default.ids
+  }
+
+}
+
+resource "aws_eks_node_group" "node_group" {
+
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  node_group_name = "demo-node-group"
+
+  node_role_arn = data.aws_iam_role.node_group_role.arn
+
+  subnet_ids = data.aws_subnets.default.ids
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
+  }
+
+  instance_types = ["t3.micro"]
+
 }
